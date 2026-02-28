@@ -20,6 +20,7 @@ var version string
 type BundleCmdOption struct {
 	ExcludePatterns []string
 	IncludeHidden   bool
+	ListOnly        bool
 	Verbose         bool
 }
 
@@ -58,6 +59,8 @@ func NewCmd() *cobra.Command {
 
 	f.StringSliceVarP(&option.ExcludePatterns, "exclude", "e", []string{}, "Exclude files matching the given pattern")
 	f.BoolVarP(&option.IncludeHidden, "hidden", "H", false, "Include hidden files (files or directories starting with a dot)")
+	// TODO: usage 考える
+	f.BoolVarP(&option.ListOnly, "list", "l", false, "")
 	f.BoolVarP(&option.Verbose, "verbose", "", false, "Enable verbose output")
 
 	return cmd
@@ -109,6 +112,13 @@ func runBundleCmd(cmd *cobra.Command, args []string, option BundleCmdOption) err
 	}
 
 	if len(srcFilePathList) == 0 {
+		return nil
+	}
+
+	if option.ListOnly {
+		for _, s := range srcFilePathList {
+			fmt.Println(s)
+		}
 		return nil
 	}
 
