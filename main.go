@@ -122,6 +122,7 @@ func runBundleCmd(cmd *cobra.Command, args []string, option BundleCmdOption) err
 
 	outputPath := args[len(args)-1]
 	outputFile, err := prepareOutput(outputPath)
+	defer func() { _ = outputFile.Close() }()
 	if err != nil {
 		return ergo.Wrap(err, "prepare output")
 	}
@@ -141,16 +142,23 @@ func runBundleCmd(cmd *cobra.Command, args []string, option BundleCmdOption) err
 	return nil
 }
 
-func prepareOutput(outputPath string) (io.Writer, error) {
-	var outputFile io.Writer
+type nopWriteCloser struct {
+	io.Writer
+}
+
+func (c nopWriteCloser) Close() error {
+	return nil
+}
+
+func prepareOutput(outputPath string) (io.WriteCloser, error) {
+	var outputFile io.WriteCloser
 	if outputPath == "-" {
-		outputFile = os.Stdout
+		outputFile = nopWriteCloser{os.Stdout}
 	} else {
 		file, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0666)
 		if err != nil {
 			return nil, ergo.Wrap(err, "open output file")
 		}
-		defer func() { _ = file.Close() }()
 		outputFile = file
 	}
 

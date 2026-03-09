@@ -101,6 +101,7 @@ func runGitCmd(cobra *cobra.Command, args []string, option GitCmdOption) error {
 
 	outputPath := args[len(args)-1]
 	outputFile, err := prepareOutput(outputPath)
+	defer func() { _ = outputFile.Close() }()
 	if err != nil {
 		return ergo.Wrap(err, "prepare output")
 	}
